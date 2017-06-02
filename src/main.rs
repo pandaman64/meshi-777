@@ -2,10 +2,56 @@ use std::io::stdin;
 use std::io::BufRead;
 use std::option::Option;
 use std::collections::hash_map::HashMap;
+use std::rc::Rc;
+
+#[derive(Debug,Clone)]
+enum ConsCell{
+    Nil,
+    Cons(usize,Rc<ConsCell>)
+}
+
+#[derive(Debug)]
+struct ConsCellIter<'a>{
+    cell: &'a ConsCell
+}
+
+impl ConsCell{
+    fn new() -> ConsCell{
+        ConsCell::Nil
+    }
+
+    fn singleton(v: usize) -> ConsCell{
+        ConsCell::new().cons(v)
+    }
+
+    fn cons(&self, v: usize) -> ConsCell{
+        ConsCell::Cons(v, Rc::new(self.clone()))
+    }
+
+    fn iter(&self) -> ConsCellIter{
+        ConsCellIter{ cell: self }
+    }
+}
+
+impl<'a> Iterator for ConsCellIter<'a>{
+    type Item = &'a usize;
+
+    fn next(&mut self) -> Option<Self::Item>{
+        use ConsCell::*;
+        match self.cell{
+            &Nil => None,
+            &Cons(ref v,ref c) => {
+                self.cell = c;
+                Some(v)
+            }
+        }
+    }
+}
 
 const N: usize = 777;
 
-type Memo = Vec<Option<Vec<usize>>>;
+type Path = ConsCell;
+type Memo = Vec<Option<Vec<Path>>>;
 
 fn solve<I: Iterator<Item=usize> + Clone>(memo: &mut Memo,n: usize,prices: I){
     if n == 0 || memo[n].is_some(){
@@ -14,13 +60,13 @@ fn solve<I: Iterator<Item=usize> + Clone>(memo: &mut Memo,n: usize,prices: I){
     let mut answers = vec![];
     for price in prices.clone(){
         if n == price{
-            answers.push(price);
+            answers.push(ConsCell::singleton(price));
         }
         else if n > price{
             solve(memo,n - price,prices.clone());
             if let Some(ref v) = memo[n - price]{
-                if !v.is_empty(){
-                    answers.push(price);
+                for p in v.iter().cloned(){
+                    answers.push(p.cons(price));
                 }
             }
         }
@@ -49,7 +95,12 @@ fn main() {
 
     solve(&mut memo,N,prices.keys().cloned());
 
-    for m in memo.iter(){
+    /*for m in memo.iter(){
         println!("{:?}",m);
+    }*/
+
+    for recipt in memo[N].as_ref().unwrap().iter(){
+        let s = recipt.iter().map(ToString::to_string).collect::<Vec<_>>().join(" + ");
+        println!("{}",s);
     }
 }
