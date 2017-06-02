@@ -1,4 +1,4 @@
 100
-1 hoge
-3 hage
+777 hoge
 2 hige
+3 huge

@@ -3,18 +3,20 @@ use std::io::BufRead;
 use std::option::Option;
 use std::collections::hash_map::HashMap;
 
-const N: usize = 5;
+const N: usize = 777;
 
 type Memo = Vec<Option<Vec<usize>>>;
 
 fn solve<I: Iterator<Item=usize> + Clone>(memo: &mut Memo,n: usize,prices: I){
-    println!("solving {}",n);
-    if memo[n].is_some(){
+    if n == 0 || memo[n].is_some(){
         return;
     }
     let mut answers = vec![];
     for price in prices.clone(){
-        if n >= price{
+        if n == price{
+            answers.push(price);
+        }
+        else if n > price{
             solve(memo,n - price,prices.clone());
             if let Some(ref v) = memo[n - price]{
                 if !v.is_empty(){
@@ -28,7 +30,6 @@ fn solve<I: Iterator<Item=usize> + Clone>(memo: &mut Memo,n: usize,prices: I){
 
 fn main() {
     let mut memo: Memo = vec![None; N + 1];
-    memo[0] = Some(vec![0]);
 
     let mut prices = HashMap::new();
 
