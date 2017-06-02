@@ -1,0 +1,6 @@
+[package]
+name = "meshi-777"
+version = "0.1.0"
+authors = ["pandaman64 <kointosudesuyo@infoseek.jp>"]
+
+[dependencies]

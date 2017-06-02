@@ -1,0 +1,4 @@
+100
+1 hoge
+3 hage
+2 hige
